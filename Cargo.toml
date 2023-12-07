@@ -4,6 +4,7 @@ members = [
     "day01/p1/v1",
     "day01/p2/v1",
     "day02/p1/v1",
+    "day02/p1/v3",
     "day02/p1/v2",
     "day02/p2/v1",
 ]
