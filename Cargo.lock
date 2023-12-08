@@ -32,6 +32,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "day-04-p2-v1"
+version = "0.1.0"
+dependencies = [
+ "lazy_static",
+ "once_cell",
+ "regex",
+]
+
+[[package]]
 name = "day01-p1-v1"
 version = "0.1.0"
 
