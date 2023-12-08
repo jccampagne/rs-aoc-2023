@@ -13,12 +13,10 @@ fn parse_line(line: &str) -> Number {
     let num_part = parts.next().unwrap().trim();
     let mut numbers = num_part.split(" ");
     let mut winning = HashSet::new();
-    winning.insert(numbers.next().unwrap());
-    winning.insert(numbers.next().unwrap());
-    winning.insert(numbers.next().unwrap());
-    winning.insert(numbers.next().unwrap());
-    winning.insert(numbers.next().unwrap());
-    let _ = numbers.next().unwrap(); // skip bar
+    while let Some(n) = numbers.next() {
+        if n == "|" { break;}
+        winning.insert(n);
+    }
     let mut score : i32 = 0;
     while let Some(n) = numbers.next() {
         if winning.contains(n) {
