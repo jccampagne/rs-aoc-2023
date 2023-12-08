@@ -38,13 +38,6 @@ impl Grid {
         }
     }
 
-    pub fn line(&self, number: i64) -> Option<&str> {
-        let start = (number * self.width) as usize;
-        let end = ((number + 1) * self.width) as usize;
-
-        return self.content.get(start..end);
-    }
-
     pub fn peek(&self, i_char: i64, j_line: i64) -> Option<&str> {
         let p = (j_line * self.width + i_char) as usize;
         let s = &self.content.get(p..p + 1);
@@ -61,15 +54,9 @@ struct NumberMatch {
 
 #[derive(Debug)]
 struct CandidatePositionIterator<'a> {
-    // num_line: i64,
-    // num_start: i64,
-    // num_end: i64,
     grid: &'a Grid,
-
     j_line: i64,
     i_char: i64,
-
-    // j_min: i64,
     j_max: i64,
     i_min: i64,
     i_max: i64,
@@ -80,20 +67,13 @@ impl<'a> CandidatePositionIterator<'a> {
         let j_min = line - 1;
         let j_max = line + 1;
         let i_min = start - 1;
-        let i_max = end ;
+        let i_max = end;
 
         CandidatePositionIterator {
-            // num_line: line,
-            // num_start: start,
-            // num_end: end,
             grid,
-
             j_line: j_min,
             i_char: i_min,
-
-            // j_min,
             j_max,
-
             i_min,
             i_max,
         }
@@ -279,16 +259,6 @@ mod tests {
     }
 
     #[test]
-    fn test_example0() {
-        let input = "12345
-67890";
-        let g = Grid::from_input(input);
-        assert_eq!(Some("12345"), g.line(0));
-        assert_eq!(Some("67890"), g.line(1));
-        assert_eq!(None, g.line(2));
-    }
-
-    #[test]
     fn test_example1() {
         let input = "\
 467..114..
@@ -302,12 +272,6 @@ mod tests {
 ...$.*....
 .664.598..
 ";
-
-        let g = Grid::from_input(input);
-        assert_eq!(Some("467..114.."), g.line(0));
-        assert_eq!(Some("...*......"), g.line(1));
-        assert_eq!(Some(".664.598.."), g.line(9));
-
         let expected = 4361;
         let result = parse(input);
         assert_eq!(expected, result);
@@ -335,7 +299,6 @@ mod tests {
         let result = parse(input);
         assert_eq!(expected, result);
     }
-
 
     #[test]
     fn test_example3() {
