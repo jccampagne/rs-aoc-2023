@@ -1,9 +1,4 @@
-use std::{
-    collections::{binary_heap::Iter, HashMap},
-    ffi::NulError,
-    i32,
-    ops::{Add, AddAssign, Sub}, env, fs,
-};
+use std::{env, fs, ops::Add};
 
 type Pos = i64;
 type Number = i64;
@@ -15,8 +10,6 @@ trait Gettable {
 }
 trait TypeEqual {}
 impl<T> TypeEqual for (T, T) {}
-
-type GetV<T> = <T as Gettable>::V;
 
 #[derive(Debug)]
 struct RangeMap<S, T, V>
@@ -200,13 +193,13 @@ impl Parser {
     // fn parse
 
     fn location_for(&self, seed: &Seed) -> Option<Location> {
-        let soil = dbg!(self.seed_to_soil.compute_target_for(seed)?);
-        let fert = dbg!(self.soil_to_fertilizer.compute_target_for(&soil)?);
-        let water = dbg!(self.fertilizer_to_water.compute_target_for(&fert)?);
-        let light = dbg!(self.water_to_light.compute_target_for(&water)?);
-        let temp = dbg!(self.light_to_temperature.compute_target_for(&light)?);
-        let humi = dbg!(self.temperature_to_humidity.compute_target_for(&temp)?);
-        let loc = dbg!(self.humidity_to_location.compute_target_for(&humi)?);
+        let soil = self.seed_to_soil.compute_target_for(seed)?;
+        let fert = self.soil_to_fertilizer.compute_target_for(&soil)?;
+        let water = self.fertilizer_to_water.compute_target_for(&fert)?;
+        let light = self.water_to_light.compute_target_for(&water)?;
+        let temp = self.light_to_temperature.compute_target_for(&light)?;
+        let humi = self.temperature_to_humidity.compute_target_for(&temp)?;
+        let loc = self.humidity_to_location.compute_target_for(&humi)?;
         return Some(loc);
     }
 }
@@ -218,7 +211,6 @@ fn main() {
     let contents = fs::read_to_string(input_file).unwrap();
     let result = parse(&contents);
     dbg!(&result);
-
 }
 
 fn parse_seeds(lines: &mut std::str::Lines) -> Vec<Seed> {
@@ -226,7 +218,7 @@ fn parse_seeds(lines: &mut std::str::Lines) -> Vec<Seed> {
     let mut splits = line.split(":");
     let _ = splits.next();
     let numbers = splits.next().unwrap().trim();
-    let mut numbers = numbers.split(" ");
+    let numbers = numbers.split(" ");
     let mut res: Vec<Seed> = Vec::new();
     for ns in numbers {
         let nn = ns.parse::<Number>().unwrap();
@@ -295,7 +287,6 @@ fn parse(input: &str) -> Location {
 
     lines.next(); // skip empty line
     let seed_to_soil_map = parse_map::<Seed, Soil>(&mut lines);
-    dbg!(&seed_to_soil_map);
     let soil_to_fert_map = parse_map::<Soil, Fertilizer>(&mut lines);
     let fert_to_wate_map = parse_map::<Fertilizer, Water>(&mut lines);
     let wate_to_ligh_map = parse_map::<Water, Light>(&mut lines);
@@ -312,11 +303,6 @@ fn parse(input: &str) -> Location {
         temperature_to_humidity: temp_to_humi_map,
         humidity_to_location: humi_to_loca_map,
     };
-
-    // for seed in &parser.seeds {
-    //     let loc = parser.location_for(&seed);
-    //     dbg!(loc);
-    // };
 
     let locs: &Vec<Option<Location>> = &((&parser.seeds).into_iter())
         .map(|s: &Seed| parser.location_for(&s))
