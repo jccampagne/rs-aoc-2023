@@ -7,75 +7,70 @@ use std::{
 type Pos = i64;
 type Number = i64;
 
-trait Gettable<V> {
-    type V: Add<V, Output=V> + PartialOrd;
+trait Gettable {
+    type V: Add<Self::V, Output = Self::V> + PartialOrd;
     fn getv(&self) -> Self::V;
     fn new(x: Self::V) -> Self;
 }
 trait TypeEqual {}
 impl<T> TypeEqual for (T, T) {}
 
-struct MapRange<S: Gettable<V>, T: Gettable<V>, V>
+type GetV<T> = <T as Gettable>::V;
+
+struct MapRange<S, T, V>
 where
-    (S::V, T::V): TypeEqual,
-    S::V: PartialOrd,
+    S: Gettable,
+    T: Gettable,
+    // T: Gettable<V = <S as Gettable>::V>,
 {
     source: S,
     target: T,
-    length: S::V,
+    length: V,
 }
 
-impl<S, T, V> MapRange<S, T, V>
+impl<S, T> MapRange<S, T, Number>
 where
-    S: Gettable<V> + Add<Output = S::V> + Sub<Output = S::V>,
-    T: Gettable<V> + Add<Output = T::V>,
-    (S::V, T::V): TypeEqual,
-
-    // (<S as Gettable>::V ,  <<S as Gettable>::V as Add>::Output) : TypeEqual,
-    // (<S as Gettable>::V ,  S::V) : TypeEqual,
-
-    // T: std::cmp::PartialOrd + Gettable + std::ops::Add + std::ops::Sub,
-    // (<S as Gettable>::V, <T as Gettable>::V): TypeEqual,
-    // (<S as Gettable>::V , <<S as Gettable>::V as Add>::Output): TypeEqual,
-    // (<S as Gettable>::V, <<S as Gettable>::V as Add>::Output): TypeEqual,
+    S: Gettable<V = Number>,
+    T: Gettable<V = Number>,
 {
-    fn is_in_source_range(&self, x: S) -> bool {
+    fn is_in_source_range(&self, x: &S) -> bool {
         let x = x.getv();
         let var_name = self.source.getv() + self.length;
         (self.source.getv() <= x) && (x < var_name)
     }
     fn compute_target_for(&self, x: S) -> T {
-        todo!()
-        // assert!(self.is_in_source_range(x));
-        // let t = x - self.source.getv() + self.target.getv();
-        // return T::new(t);
+        assert!(self.is_in_source_range(&x));
+        let t = x.getv() - self.source.getv() + self.target.getv();
+        return T::new(t);
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 struct Soil(Pos);
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 struct Seed(Pos);
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 struct Fertilizer(Pos);
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 struct Water(Pos);
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 struct Light(Pos);
-#[derive(Debug)]
-struct Temperature(Pos);
-#[derive(Debug)]
 
+#[derive(Debug, PartialEq, Eq, Hash)]
+struct Temperature(Pos);
+
+#[derive(Debug, PartialEq, Eq, Hash)]
 struct Humidity(Pos);
-#[derive(Debug)]
+
+#[derive(Debug, PartialEq, Eq, Hash)]
 struct Location(Pos);
 
 impl Gettable for Seed {
-    type V = Pos;
+    type V = Number;
     fn getv(&self) -> Self::V {
         return self.0;
     }
@@ -84,25 +79,25 @@ impl Gettable for Seed {
     }
 }
 
-impl Gettable for Soil {
-    type V = Pos;
-    fn getv(&self) -> Self::V {
-        return self.0;
-    }
-    fn new(x: Self::V) -> Self {
-        Self(x)
-    }
-}
+// impl Gettable<Pos> for Soil {
+//     type V = Pos;
+//     fn getv(&self) -> Self::V {
+//         return self.0;
+//     }
+//     fn new(x: Self::V) -> Self {
+//         Self(x)
+//     }
+// }
 
-impl Gettable for Fertilizer {
-    type V = Pos;
-    fn getv(&self) -> Self::V {
-        return self.0;
-    }
-    fn new(x: Self::V) -> Self {
-        Self(x)
-    }
-}
+// impl Gettable<Pos> for Fertilizer {
+//     type V = Pos;
+//     fn getv(&self) -> Self::V {
+//         return self.0;
+//     }
+//     fn new(x: Self::V) -> Self {
+//         Self(x)
+//     }
+// }
 
 type SeedToSoilMap = HashMap<Seed, Soil>;
 type SoilToFertilizerMap = HashMap<Soil, Fertilizer>;
@@ -121,6 +116,19 @@ struct Parser {
     light_to_temperature: LightToTemperatureMap,
     temperature_to_humidity: TemperatureToHumidityMap,
     humidity_to_location: HumidityToLocation,
+}
+
+impl Parser {
+    fn location_for(&self, seed: &Seed) -> Option<&Location> {
+        let soil = self.seed_to_soil.get(&seed)?;
+        let fert = self.soil_to_fertilizer.get(&soil)?;
+        let water = self.fertilizer_to_water.get(&fert)?;
+        let light = self.water_to_light.get(&water)?;
+        let temp = self.light_to_temperature.get(&light)?;
+        let humi = self.temperature_to_humidity.get(&temp)?;
+        let loc = self.humidity_to_location.get(&humi)?;
+        return Some(loc);
+    }
 }
 
 fn main() {
