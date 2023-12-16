@@ -11,4 +11,6 @@ members = [
     "day04/p1/v1",
     "day04/p2/v1",
     "day05/p1/v1",
+    "day05/p2/v1",
+    "day06/p1/v1",
 ]
