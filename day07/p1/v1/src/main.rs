@@ -18,34 +18,43 @@ enum Card {
     CK,
     CA,
 }
+
+type OriginalHand = [Card; 5];
+
 #[derive(Debug, PartialEq, PartialOrd, Eq)]
 enum Hand {
     FiveOfAKind {
         five: Card,
+        orig: OriginalHand,
     },
     FourOfAKind {
         four: Card,
         one: Card,
+        orig: OriginalHand,
     },
     FullHouse {
         three: Card,
         two: Card,
+        orig: OriginalHand,
     },
     ThreeOfAKind {
         three: Card,
         one_a: Card,
         one_b: Card,
+        orig: OriginalHand,
     },
     TwoPairs {
         two_a: Card,
         two_b: Card,
         one: Card,
+        orig: OriginalHand,
     },
     OnePair {
         two: Card,
         one_a: Card,
         one_b: Card,
         one_c: Card,
+        orig: OriginalHand,
     },
     HighCard {
         one_a: Card,
@@ -53,6 +62,7 @@ enum Hand {
         one_c: Card,
         one_d: Card,
         one_e: Card,
+        orig: OriginalHand,
     },
 }
 
@@ -60,63 +70,52 @@ enum Hand {
 impl Ord for Hand {
     fn cmp(&self, other: &Self) -> Ordering {
         match (self, other) {
-            (Hand::FiveOfAKind { five: five_a }, Hand::FiveOfAKind { five: five_b }) => five_a.cmp(five_b),
+            (Hand::FiveOfAKind { orig: s_orig, .. }, Hand::FiveOfAKind { orig: o_orig, .. }) => s_orig.cmp(o_orig),
             (Hand::FiveOfAKind { .. }, _ )                                           => Ordering::Greater,
             // ---------------------------------------------------------------
             (Hand::FourOfAKind { .. },        Hand::FiveOfAKind { .. }) => Ordering::Less,
-            (Hand::FourOfAKind { four: s_four, one: s_one },
-             Hand::FourOfAKind { four: o_four, one: o_one })
-                 => ( s_four, s_one).cmp(
-                    &(o_four, o_one)),
+            (Hand::FourOfAKind { orig: s_orig, .. },
+             Hand::FourOfAKind { orig: o_orig, .. })                    => s_orig.cmp(o_orig),
             (Hand::FourOfAKind { .. }, _)                               => Ordering::Greater,
             // ---------------------------------------------------------------
             (Hand::FullHouse { .. }, Hand::FiveOfAKind { .. }) => Ordering::Less,
             (Hand::FullHouse { .. }, Hand::FourOfAKind { .. }) => Ordering::Less,
-            (Hand::FullHouse { three: s_three, two: s_two },
-             Hand::FullHouse { three: o_three, two: o_two })
-                 => (s_three, s_two).cmp(&(o_three, o_two)),
+            (Hand::FullHouse { orig: s_orig, .. },
+             Hand::FullHouse { orig: o_orig, .. })             => s_orig.cmp(o_orig),
             (Hand::FullHouse { .. }, _)                        => Ordering::Greater,
             // ---------------------------------------------------------------
             (Hand::ThreeOfAKind { .. }, Hand::FiveOfAKind { .. }) => Ordering::Less,
             (Hand::ThreeOfAKind { .. }, Hand::FourOfAKind { .. }) => Ordering::Less,
             (Hand::ThreeOfAKind { .. }, Hand::FullHouse { .. })   => Ordering::Less,
-            (Hand::ThreeOfAKind { three: s_three, one_a: s_one_a, one_b: s_one_b},
-             Hand::ThreeOfAKind { three: o_three, one_a: o_one_a, one_b: o_one_b })
-               => (s_three, s_one_a, s_one_b).cmp(
-                 &(o_three, o_one_a, o_one_b)),
+            (Hand::ThreeOfAKind { orig: s_orig, ..},
+             Hand::ThreeOfAKind { orig: o_orig, .. })             => s_orig.cmp(o_orig),
             (Hand::ThreeOfAKind { .. }, _)                        => Ordering::Greater,
             // ---------------------------------------------------------------
             (Hand::TwoPairs { .. }, Hand::FiveOfAKind  { .. }) => Ordering::Less,
             (Hand::TwoPairs { .. }, Hand::FourOfAKind  { .. }) => Ordering::Less,
             (Hand::TwoPairs { .. }, Hand::FullHouse    { .. }) => Ordering::Less,
             (Hand::TwoPairs { .. }, Hand::ThreeOfAKind { .. }) => Ordering::Less,
-            (Hand::TwoPairs { two_a: s_two_a, two_b: s_two_b, one: s_one},
-             Hand::TwoPairs { two_a: o_two_a, two_b: o_two_b, one:o_one })
-                => (s_two_a, s_two_b, s_one).cmp(
-                  &(o_two_a, o_two_b, o_one)),
-            (Hand::TwoPairs { .. }, _) => Ordering::Greater,
+            (Hand::TwoPairs { orig: s_orig, .. },
+             Hand::TwoPairs { orig: o_orig, .. })              => s_orig.cmp(o_orig),
+            (Hand::TwoPairs { .. }, _ )                        => Ordering::Greater,
             // ---------------------------------------------------------------
-            (Hand::OnePair { .. }, Hand::FiveOfAKind { .. }) => Ordering::Less,
-            (Hand::OnePair { .. }, Hand::FourOfAKind { .. }) => Ordering::Less,
-            (Hand::OnePair { .. }, Hand::FullHouse { .. })   => Ordering::Less,
-            (Hand::OnePair { .. }, Hand::ThreeOfAKind {..})  => Ordering::Less,
-            (Hand::OnePair { .. }, Hand::TwoPairs { .. })    => Ordering::Less,
-            (Hand::OnePair { two: s_two, one_a: s_one_a, one_b: s_one_b, one_c: s_one_c},
-             Hand::OnePair { two: o_two, one_a: o_one_a, one_b: o_one_b, one_c: o_one_c})
-                =>(s_two, s_one_a, s_one_b, s_one_c).cmp(
-                 &(o_two, o_one_a, o_one_b, o_one_c)),
-            (Hand::OnePair { .. }, Hand::HighCard {..})      => Ordering::Greater,
+            (Hand::OnePair { .. }, Hand::FiveOfAKind { .. })   => Ordering::Less,
+            (Hand::OnePair { .. }, Hand::FourOfAKind { .. })   => Ordering::Less,
+            (Hand::OnePair { .. }, Hand::FullHouse { .. })     => Ordering::Less,
+            (Hand::OnePair { .. }, Hand::ThreeOfAKind { .. })  => Ordering::Less,
+            (Hand::OnePair { .. }, Hand::TwoPairs { .. })      => Ordering::Less,
+            (Hand::OnePair { orig: s_orig, .. },
+             Hand::OnePair { orig: o_orig, .. })               => s_orig.cmp(o_orig),
+            (Hand::OnePair { .. }, Hand::HighCard {..})        => Ordering::Greater,
             // ---------------------------------------------------------------
             (Hand::HighCard { .. }, Hand::FiveOfAKind  { .. }) => Ordering::Less,
             (Hand::HighCard { .. }, Hand::FourOfAKind  { .. }) => Ordering::Less,
             (Hand::HighCard { .. }, Hand::FullHouse    { .. }) => Ordering::Less,
             (Hand::HighCard { .. }, Hand::ThreeOfAKind { .. }) => Ordering::Less,
             (Hand::HighCard { .. }, Hand::TwoPairs     { .. }) => Ordering::Less,
-            (Hand::HighCard { one_a: s_one_a, one_b: s_one_b, one_c: s_one_c, one_d: s_one_d, one_e: s_one_e },
-             Hand::HighCard { one_a: o_one_a, one_b: o_one_b, one_c: o_one_c, one_d: o_one_d, one_e: o_one_e })
-                => (s_one_a, s_one_b, s_one_c, s_one_d, s_one_e).cmp(
-                  &(o_one_a, o_one_b, o_one_c, o_one_d, o_one_e)),
-            (Hand::HighCard {..}, _) => Ordering::Less
+            (Hand::HighCard { orig: s_orig, .. },
+             Hand::HighCard { orig: o_orig, .. })              => s_orig.cmp(o_orig),
+            (Hand::HighCard {..}, _)                           => Ordering::Less
             // ---------------------------------------------------------------
         }
     }
@@ -186,28 +185,13 @@ impl fmt::Display for Card {
 impl fmt::Display for Hand {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let l = match self {
-            Hand::FiveOfAKind { five } => [five, five, five, five, five],
-            Hand::FourOfAKind { four, one } => [four, four, four, four, one],
-            Hand::FullHouse { three, two } => [three, three, three, two, two],
-            Hand::ThreeOfAKind {
-                three,
-                one_a,
-                one_b,
-            } => [three, three, three, one_a, one_b],
-            Hand::TwoPairs { two_a, two_b, one } => [two_a, two_a, two_b, two_b, one],
-            Hand::OnePair {
-                two,
-                one_a,
-                one_b,
-                one_c,
-            } => [two, two, one_a, one_b, one_c],
-            Hand::HighCard {
-                one_a,
-                one_b,
-                one_c,
-                one_d,
-                one_e,
-            } => [one_a, one_b, one_c, one_d, one_e],
+            Hand::FiveOfAKind { orig, .. } => orig,
+            Hand::FourOfAKind { orig, .. } => orig,
+            Hand::FullHouse { orig, .. } => orig,
+            Hand::ThreeOfAKind { orig, .. } => orig,
+            Hand::TwoPairs { orig, .. } => orig,
+            Hand::OnePair { orig, .. } => orig,
+            Hand::HighCard { orig, .. } => orig,
         };
         l.iter().map(|c| c.fmt(f)).collect()
     }
@@ -224,17 +208,15 @@ fn parse_input(input: &str) -> Result<Number, MyError> {
         r
     }
     result_2.sort_by(comp);
-    // dbg!(&result_2);
-    for l in &result_2 {
-        println!("{} {}", l.hand, l.bid);
-    }
 
     let result = result_2
         .iter()
         .enumerate()
         .map(|(i, pl)| {
-            // dbg!(i, pl);
-            (pl.bid as Number) * ((i + 1) as Number)
+            let rank = i + 1;
+            let strength = (pl.bid as Number) * (rank as Number);
+            println!("{} {} {} = {}", rank, pl.hand, pl.bid, strength);
+            strength
         })
         .sum();
 
@@ -249,6 +231,7 @@ fn parse_hand(input: &str) -> Result<Hand, MyError> {
         return Err(MyError("empty 1".into()));
     }
     let mut the_chars = the_chars.into_iter();
+    let mut orig: Vec<Card> = Vec::new();
 
     let mut current_char = the_chars.next().unwrap();
     let try_from = Card::try_from(current_char);
@@ -257,6 +240,7 @@ fn parse_hand(input: &str) -> Result<Hand, MyError> {
     };
     let mut i: Quantity = 1;
     let mut total: Quantity = 1;
+
     while let Some(next_char) = the_chars.next() {
         total += 1;
         if current_char == next_char {
@@ -287,9 +271,23 @@ fn parse_hand(input: &str) -> Result<Hand, MyError> {
     let couple = (i, current_card);
     couples.push(couple);
 
-    let hand = couples_to_hand(couples);
+    let orig = input.chars().collect::<Vec<char>>();
+    let orig: Result<Vec<Card>, _> = orig.iter().map(|c| Card::try_from(*c)).collect();
+    let Ok(orig) = orig else {
+        return Err(MyError("oops".into()));
+    };
 
-    if total != 5 {
+    let orig: [Card; HAND_SIZE] = orig.try_into().unwrap_or_else(|v: Vec<Card>| {
+        panic!(
+            "Expected a Vec of length {} but it was {}",
+            HAND_SIZE,
+            v.len()
+        )
+    });
+
+    let hand = couples_to_hand(couples, orig);
+
+    if total as usize != HAND_SIZE {
         return Err(MyError(format!(
             "wrong number of cards {} - {:?}",
             total, hand
@@ -298,8 +296,8 @@ fn parse_hand(input: &str) -> Result<Hand, MyError> {
 
     return hand;
 }
-
-fn couples_to_hand(mut couples: Vec<Couple>) -> Result<Hand, MyError> {
+const HAND_SIZE: usize = 5;
+fn couples_to_hand(mut couples: Vec<Couple>, orig: [Card; HAND_SIZE]) -> Result<Hand, MyError> {
     couples.sort();
     let couples = couples.into_iter().rev().collect::<Vec<Couple>>();
 
@@ -310,38 +308,44 @@ fn couples_to_hand(mut couples: Vec<Couple>) -> Result<Hand, MyError> {
         couples.get(3),
         couples.get(4),
     ) {
-        (Some((5, c5)), None, None, None, None) => Ok(Hand::FiveOfAKind { five: *c5 }),
-        (Some((4, c4)), Some((1, c1)), None, None, None) => Ok(Hand::FourOfAKind {
-            four: *c4,
+        (Some((5, a5)), None, None, None, None) => Ok(Hand::FiveOfAKind { five: *a5, orig }),
+        (Some((4, a4)), Some((1, b1)), None, None, None) => Ok(Hand::FourOfAKind {
+            four: *a4,
+            one: *b1,
+            orig,
+        }),
+        (Some((3, a3)), Some((2, b2)), None, None, None) => Ok(Hand::FullHouse {
+            three: *a3,
+            two: *b2,
+            orig,
+        }),
+        (Some((3, a3)), Some((1, b1)), Some((1, c1)), None, None) => Ok(Hand::ThreeOfAKind {
+            three: *a3,
+            one_a: *b1,
+            one_b: *c1,
+            orig,
+        }),
+        (Some((2, a2)), Some((2, b2)), Some((1, c1)), None, None) => Ok(Hand::TwoPairs {
+            two_a: *a2,
+            two_b: *b2,
             one: *c1,
+            orig,
         }),
-        (Some((3, c3)), Some((2, c2)), None, None, None) => Ok(Hand::FullHouse {
-            three: *c3,
-            two: *c2,
+        (Some((2, a2)), Some((1, b1)), Some((1, c1)), Some((1, d1)), None) => Ok(Hand::OnePair {
+            two: *a2,
+            one_a: *b1,
+            one_b: *c1,
+            one_c: *d1,
+            orig,
         }),
-        (Some((3, c3)), Some((1, c1)), Some((1, d1)), None, None) => Ok(Hand::ThreeOfAKind {
-            three: *c3,
-            one_a: *c1,
-            one_b: *d1,
-        }),
-        (Some((2, c2)), Some((2, d2)), Some((1, d1)), None, None) => Ok(Hand::TwoPairs {
-            two_a: *c2,
-            two_b: *d2,
-            one: *d1,
-        }),
-        (Some((2, c2)), Some((1, c1)), Some((1, d1)), Some((1, e1)), None) => Ok(Hand::OnePair {
-            two: *c2,
-            one_a: *c1,
-            one_b: *d1,
-            one_c: *e1,
-        }),
-        (Some((1, c1)), Some((1, d1)), Some((1, e1)), Some((1, f1)), Some((1, g1))) => {
+        (Some((1, a1)), Some((1, b1)), Some((1, c1)), Some((1, d1)), Some((1, e1))) => {
             Ok(Hand::HighCard {
-                one_a: *c1,
-                one_b: *d1,
-                one_c: *e1,
-                one_d: *f1,
-                one_e: *g1,
+                one_a: *a1,
+                one_b: *b1,
+                one_c: *c1,
+                one_d: *d1,
+                one_e: *e1,
+                orig,
             })
         }
         x => Err(MyError(format!("ooops: {:?}", x))),
@@ -372,6 +376,7 @@ fn parse_line(input: &str) -> Result<ParsedLine, MyError> {
 
     Ok(ParsedLine { hand, bid })
 }
+
 impl AsRef<Hand> for Hand {
     fn as_ref(&self) -> &Hand {
         return self;
@@ -389,9 +394,9 @@ mod tests {
                 "1",
                 Err(MyError("try from error Some(ParseCardError(\"1\"))".into())),
             ),
-            ("A", Err(MyError("ooops".into()))),
-            ("33333", Ok(Hand::FiveOfAKind { five: C3 })),
-            ("333333333", Err(MyError("ooops".into()))),
+            ("A", Err(MyError("wrong number of cards 1 - Err(MyError(\"ooops: (Some((1, CA)), None, None, None, None)\"))".into()))),
+            ("33333", Ok(Hand::FiveOfAKind { five: C3 , orig: [C3, C3, C3, C3, C3]})),
+            ("333333333", Err(MyError("wrong number of cards 9 - Err(MyError(\"ooops: (Some((9, C3)), None, None, None, None)\"))".into()))),
             (
                 "67345",
                 Ok(Hand::HighCard {
@@ -400,6 +405,7 @@ mod tests {
                     one_c: C5,
                     one_d: C4,
                     one_e: C3,
+                    orig: [C6,C7,C3,C4,C5]
                 }),
             ),
             (
@@ -407,6 +413,7 @@ mod tests {
                 Ok(Hand::FourOfAKind {
                     four: C3,
                     one: Card::C2,
+                    orig: [C3, C3, C3, C3, C2]
                 }),
             ),
         ];
@@ -426,6 +433,7 @@ mod tests {
                 one_a: CK,
                 one_b: CT,
                 one_c: C2,
+                orig: [C3, C2, CT, C3, CK],
             },
             bid: 765,
         });
@@ -446,92 +454,15 @@ mod tests {
     }
 
     #[test]
-    fn test_ordering_2() {
-        let list: [Hand; 8] = [
-            "22222", "KKKKK", "22K22", "3K3K3", "3K3K2", "44KAT", "33567", "2345K",
-        ]
-        .map(|input| parse_hand(input).unwrap());
-
-        let sorted: Vec<&Hand> = list.iter().collect::<Vec<&Hand>>();
-
-        let expected = [
-            &Hand::FiveOfAKind { five: C2 },
-            &Hand::FiveOfAKind { five: CK },
-            &Hand::FourOfAKind { four: C2, one: CK },
-            &Hand::FullHouse { three: C3, two: CK },
-            &Hand::TwoPairs {
-                two_a: CK,
-                two_b: C3,
-                one: C2,
-            },
-            &Hand::OnePair {
-                two: C4,
-                one_a: CA,
-                one_b: CK,
-                one_c: CT,
-            },
-            &Hand::OnePair {
-                two: C3,
-                one_a: C7,
-                one_b: C6,
-                one_c: C5,
-            },
-            &Hand::HighCard {
-                one_a: CK,
-                one_b: C5,
-                one_c: C4,
-                one_d: C3,
-                one_e: C2,
-            },
-        ];
-        // let expected = expected.map(|h: Hand| &h);
-        assert_eq!(sorted, expected);
-    }
-
-    #[test]
-    fn test_ordering_3() {
-        let list: [Hand; 5] =
-            ["32T3K", "T55J5", "KK677", "KTJJT", "QQQJA"].map(|input| parse_hand(input).unwrap());
-
-        let mut hands: Vec<&Hand> = list.iter().collect::<Vec<&Hand>>();
-        hands.sort();
-        let sorted = hands;
-        let expected = [
-            &Hand::ThreeOfAKind {
-                three: C5,
-                one_a: CJ,
-                one_b: CT,
-            },
-            &Hand::ThreeOfAKind {
-                three: CQ,
-                one_a: CA,
-                one_b: CJ,
-            },
-            &Hand::TwoPairs {
-                two_a: CJ,
-                two_b: CT,
-                one: CK,
-            },
-            &Hand::TwoPairs {
-                two_a: CK,
-                two_b: C7,
-                one: C6,
-            },
-            &Hand::OnePair {
-                two: C3,
-                one_a: CK,
-                one_b: CT,
-                one_c: C2,
-            },
-        ];
-        // let expected = expected.map(|h: Hand| &h);
-        assert_eq!(sorted, expected);
-    }
-
-    #[test]
     fn test_refs() {
-        let vv: Vec<Hand> = vec![Hand::FiveOfAKind { five: C4 }];
-        let vr: Vec<&Hand> = vec![&Hand::FiveOfAKind { five: C4 }];
+        let vv: Vec<Hand> = vec![Hand::FiveOfAKind {
+            five: C4,
+            orig: [C4, C4, C4, C4, C4],
+        }];
+        let vr: Vec<&Hand> = vec![&Hand::FiveOfAKind {
+            five: C4,
+            orig: [C4, C4, C4, C4, C4],
+        }];
         let vvr = vv.iter().map(|h| h.as_ref()).collect::<Vec<&Hand>>(); // why...
         assert_eq!(vvr, vr);
     }
@@ -547,7 +478,8 @@ QQQJA 483";
 
         let result = parse_input(input);
         dbg!(&result);
-        let expected = 765 * 1 + 220 * 2 + 28 * 3 + 684 * 4 + 483 * 5;
+        // let expected = 765 * 1 + 220 * 2 + 28 * 3 + 684 * 4 + 483 * 5;
+        let expected = 6440;
         assert_eq!(expected, result.ok().unwrap());
     }
 }
