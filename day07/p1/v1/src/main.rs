@@ -1,6 +1,6 @@
-use std::{cmp::Ordering, env, fs, path::Display};
+use std::{cmp::Ordering, env, fmt, fs};
 
-type Number = i64;
+type Number = i128;
 
 #[derive(Debug, PartialEq, PartialOrd, Ord, Eq, Clone, Copy)]
 enum Card {
@@ -162,6 +162,56 @@ impl TryFrom<char> for Card {
         }
     }
 }
+impl fmt::Display for Card {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let c = match self {
+            Card::C2 => "2",
+            Card::C3 => "3",
+            Card::C4 => "4",
+            Card::C5 => "5",
+            Card::C6 => "6",
+            Card::C7 => "7",
+            Card::C8 => "8",
+            Card::C9 => "9",
+            Card::CT => "T",
+            Card::CJ => "J",
+            Card::CQ => "Q",
+            Card::CK => "K",
+            Card::CA => "A",
+        };
+        write!(f, "{}", c)
+    }
+}
+
+impl fmt::Display for Hand {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let l = match self {
+            Hand::FiveOfAKind { five } => [five, five, five, five, five],
+            Hand::FourOfAKind { four, one } => [four, four, four, four, one],
+            Hand::FullHouse { three, two } => [three, three, three, two, two],
+            Hand::ThreeOfAKind {
+                three,
+                one_a,
+                one_b,
+            } => [three, three, three, one_a, one_b],
+            Hand::TwoPairs { two_a, two_b, one } => [two_a, two_a, two_b, two_b, one],
+            Hand::OnePair {
+                two,
+                one_a,
+                one_b,
+                one_c,
+            } => [two, two, one_a, one_b, one_c],
+            Hand::HighCard {
+                one_a,
+                one_b,
+                one_c,
+                one_d,
+                one_e,
+            } => [one_a, one_b, one_c, one_d, one_e],
+        };
+        l.iter().map(|c| c.fmt(f)).collect()
+    }
+}
 
 fn parse_input(input: &str) -> Result<Number, MyError> {
     // let result: Vec<Result<ParsedLine, MyError>> = input.lines().map(parse_line).collect();
@@ -174,12 +224,16 @@ fn parse_input(input: &str) -> Result<Number, MyError> {
         r
     }
     result_2.sort_by(comp);
-    dbg!(&result_2);
+    // dbg!(&result_2);
+    for l in &result_2 {
+        println!("{} {}", l.hand, l.bid);
+    }
+
     let result = result_2
         .iter()
         .enumerate()
         .map(|(i, pl)| {
-            dbg!(i, pl);
+            // dbg!(i, pl);
             (pl.bid as Number) * ((i + 1) as Number)
         })
         .sum();
