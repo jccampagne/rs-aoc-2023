@@ -52,19 +52,24 @@ fn predict(numbers: &Vec<Number>) -> Number {
             a = b
         }
 
-        // dbg!(&diffs);
+        dbg!(&diffs);
         all_diffs.push(diffs);
         current = &all_diffs.last().unwrap()
     }
-    let res = all_diffs
-        .iter()
-        .map(|d| d.first())
-        .flatten()
-        .copied()
-        .fold(0, |acc, p| p - acc);
+    let mut ps = Vec::new();
+    let firsts = all_diffs.iter().map(|d| d.first()).flatten().copied().rev();
 
-    for d in all_diffs {
-        for i in d {
+    dbg!(firsts.clone().collect::<Vec<Number>>());
+
+    let res = firsts.fold(0, |acc, p| {
+        let r = p - acc;
+        ps.push(r);
+        r
+    });
+
+    for (i, ds) in all_diffs.iter().enumerate() {
+        print!("{}   ] ", ps[i]);
+        for d in ds {
             print!(" {} ", i);
         }
         println!("");
