@@ -1,5 +1,5 @@
 [workspace]
-
+resolver = "2"
 members = [
     "day01/p1/v1",
     "day01/p2/v1",
@@ -16,4 +16,5 @@ members = [
     "day07/p1/v1",
     "day08/p1/v1",
     "day09/p1/v1",
+    "day09/p2/v1",
 ]
