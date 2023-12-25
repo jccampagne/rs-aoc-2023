@@ -1,5 +1,3 @@
-use core::num;
-
 fn main() {
     println!("Hello, world!");
 }
@@ -26,24 +24,24 @@ fn predict(numbers: &Vec<Number>) -> Number {
     dbg!(numbers);
     let mut all_diffs: Vec<VNumbers> = Vec::new();
     let mut do_loop = true;
-    // let mut current: &VNumbers = numbers;
-    while do_loop {
     let mut current: &VNumbers = numbers;
-    do_loop = false;
-        let mut iter = current.iter();
-        let a = iter.next().unwrap();
+    while do_loop {
+        do_loop = false;
         let mut diffs: VNumbers = Vec::new();
-        // current = &diffs;
+
+        let mut iter = current.iter();
+        let mut a = iter.next().unwrap();
         while let Some(b) = iter.next() {
             let d = b - a;
             diffs.push(d);
             if d != 0 {
                 do_loop = true
             }
+            a = b
         }
 
         all_diffs.push(diffs);
-        // current = &all_diffs.last().unwrap()
+        current = &all_diffs.last().unwrap()
     }
     dbg!(all_diffs);
     todo!()
