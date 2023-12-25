@@ -21,12 +21,8 @@ fn parse_line(line: &str) -> Number {
     let numbers: Result<Vec<Number>, _> = line
         .split_whitespace()
         .map(|c| {
-            dbg!(c);
             let r = c.parse::<Number>();
             r
-        })
-        .inspect(|x| {
-            dbg!(x);
         })
         .collect();
     let numbers = numbers.unwrap();
@@ -66,7 +62,6 @@ fn predict(numbers: &Vec<Number>) -> Number {
         .copied()
         .inspect(|x| {
             dbg!(x);
-            eprint!("{}", x);
         })
         .collect::<Vec<Number>>()
         .iter()
