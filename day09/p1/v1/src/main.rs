@@ -1,5 +1,12 @@
+use std::{env, fs};
+
 fn main() {
-    println!("Hello, world!");
+    let mut args = env::args();
+    args.next();
+    let input_file = args.next().unwrap();
+    let contents = fs::read_to_string(input_file).unwrap();
+    let result = parse(&contents);
+    dbg!(result);
 }
 
 type Number = i32;
@@ -13,7 +20,14 @@ fn parse(input: &str) -> Number {
 fn parse_line(line: &str) -> Number {
     let numbers: Result<Vec<Number>, _> = line
         .split_whitespace()
-        .map(|c| c.parse::<Number>())
+        .map(|c| {
+            dbg!(c);
+            let r = c.parse::<Number>();
+            r
+        })
+        .inspect(|x| {
+            dbg!(x);
+        })
         .collect();
     let numbers = numbers.unwrap();
     let prediction = predict(&numbers);
@@ -23,6 +37,7 @@ fn parse_line(line: &str) -> Number {
 fn predict(numbers: &Vec<Number>) -> Number {
     dbg!(numbers);
     let mut all_diffs: Vec<VNumbers> = Vec::new();
+    all_diffs.push(numbers.clone());
     let mut do_loop = true;
     let mut current: &VNumbers = numbers;
     while do_loop {
@@ -43,8 +58,19 @@ fn predict(numbers: &Vec<Number>) -> Number {
         all_diffs.push(diffs);
         current = &all_diffs.last().unwrap()
     }
-    dbg!(all_diffs);
-    todo!()
+
+    all_diffs
+        .iter()
+        .map(|d| d.last())
+        .flatten()
+        .copied()
+        .inspect(|x| {
+            dbg!(x);
+            eprint!("{}", x);
+        })
+        .collect::<Vec<Number>>()
+        .iter()
+        .sum::<Number>()
 }
 #[cfg(test)]
 mod test {
